@@ -1,5 +1,7 @@
 # AI Fullstack Toolkit
 
+Standalone repository: [paulparkinson/ai-fullstack-toolkit](https://github.com/paulparkinson/ai-fullstack-toolkit). See [migration notes](MIGRATION.md) and [included skills](AGENTS.md).
+
 AI Fullstack Toolkit makes one business-tool definition available across four complementary AI surfaces:
 
 | Surface | Generated output |
