@@ -1,6 +1,8 @@
 # AI Fullstack Toolkit
 
-Standalone repository: [paulparkinson/ai-fullstack-toolkit](https://github.com/paulparkinson/ai-fullstack-toolkit). See [migration notes](MIGRATION.md) and [included skills](AGENTS.md).
+AI Fullstack Toolkit is a full-stack toolkit that allows MCP tools provided by the MCP toolkit to be exposed as A2A agents via configuration alone, while making A2UI and MCP Apps pluggable as well. Together, these integrations form a full-stack solution. Any UI can be used or specified; the toolkit also provides a convenient subset of best-practice UIs for varied data visualizations and workflows.
+
+![AI Fullstack Toolkit dashboard](images/ai-fullstack-toolkit-dashboard.png)
 
 AI Fullstack Toolkit makes one business-tool definition available across four complementary AI surfaces:
 
@@ -29,7 +31,7 @@ mvn test
 mvn -pl runtime -am spring-boot:run
 ```
 
-Open [http://localhost:8080](http://localhost:8080). The Tron-themed **AI Fullstack Toolkit** dashboard displays the seeded definitions and their enabled surfaces. Select each output tab to view the generated MCP descriptor, A2A card, A2UI messages, or MCP App resource descriptor. Use **Create** to create or replace a definition in the running registry. This first runtime configuration store is intentionally in-memory: restart restores the seeded definition, which makes the demo safe to explore.
+Open [http://localhost:8080](http://localhost:8080). The **AI Fullstack Toolkit** dashboard displays the seeded definitions and their enabled surfaces. Select each output tab to view the generated MCP descriptor, A2A card, A2UI messages, or MCP App resource descriptor. Use **Create** to create or replace a definition in the running registry. This first runtime configuration store is intentionally in-memory: restart restores the seeded definition, which makes the demo safe to explore.
 
 ## Seeded supply-chain surfaces
 
