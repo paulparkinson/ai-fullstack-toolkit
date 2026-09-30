@@ -21,6 +21,38 @@ It deliberately has only three publishable Maven artifacts:
 
 The included inventory-transfer project is a non-published example, not a fourth library. The upstream Oracle Database MCP Java Toolkit source is vendored as a pinned functional reference under [`upstream/`](UPSTREAM.md); it is not copied into or hidden behind the new API.
 
+The runtime includes Oracle JDBC Driver Extensions for centralized configuration and authentication across OCI, Microsoft Azure, Google Cloud Platform (GCP), and Amazon Web Services (AWS). These providers are loaded through JDBC's standard service-provider mechanism, so existing JDBC URLs and properties can select the cloud configuration provider without application-code changes. See the [ojdbc-extensions project](https://github.com/oracle/ojdbc-extensions) for provider URL and property formats.
+
+The database integration also supports Oracle Data Safe Deep Data Security (DDS) across OCI, Azure, GCP, and AWS deployments, allowing the same security controls to follow the database connection regardless of cloud placement.
+
+## Component architecture
+
+```mermaid
+flowchart LR
+  Config[Toolkit YAML / environment] --> Core[ai-fullstack-toolkit core\nDefinitions · loader · registry · projections]
+  Core --> MCP[MCP descriptor]
+  Core --> A2A[A2A agent card]
+  Core --> A2UI[A2UI messages]
+  Core --> App[MCP App resource]
+  Core --> Starter[ai-fullstack-toolkit-starter\nSpring Boot auto-configuration]
+  Starter --> Runtime[ai-fullstack-runtime\nSpring Boot API + database checks]
+  JDBC[Oracle JDBC + cloud config providers\nOCI · Azure · GCP · AWS] --> Runtime
+```
+
+### Spring Boot starter and admin GUI
+
+```mermaid
+flowchart TB
+  Admin[Administrator] --> GUI[Runtime admin GUI\nstatic HTML / CSS / JavaScript]
+  GUI --> API[Spring Boot REST API\n/api/tools · database checks]
+  API --> Starter[Spring Boot starter]
+  Starter --> Registry[ToolRegistry]
+  Registry --> Core[Core definitions and projections]
+  API --> JDBC[Oracle JDBC connection]
+  JDBC --> DDS[Deep Data Security\nOCI · Azure · GCP · AWS]
+  JDBC --> Providers[ojdbc-extensions\ncloud configuration providers]
+```
+
 ## Quick start
 
 Prerequisites: JDK 17+ and Maven 3.9+.

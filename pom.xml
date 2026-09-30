@@ -8,7 +8,7 @@
   <packaging>pom</packaging>
   <name>AI Fullstack Toolkit</name>
   <modules><module>core</module><module>starter</module><module>runtime</module><module>examples/inventory-transfer-demo</module></modules>
-  <properties><java.version>17</java.version><spring-boot.version>3.4.4</spring-boot.version><project.build.sourceEncoding>UTF-8</project.build.sourceEncoding></properties>
+  <properties><java.version>17</java.version><spring-boot.version>3.4.4</spring-boot.version><ojdbc.version>23.9.0.25.07</ojdbc.version><ojdbc.extensions.version>1.1.0</ojdbc.extensions.version><project.build.sourceEncoding>UTF-8</project.build.sourceEncoding></properties>
   <dependencyManagement>
     <dependencies>
       <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-dependencies</artifactId><version>${spring-boot.version}</version><type>pom</type><scope>import</scope></dependency>
