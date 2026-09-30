@@ -27,6 +27,8 @@ The database integration also supports Oracle Data Safe Deep Data Security (DDS)
 
 ## Component architecture
 
+![AI Fullstack Toolkit architecture](images/ai-fullstack-toolkit-architecture.png)
+
 ```mermaid
 flowchart LR
   Config[Toolkit YAML / environment] --> Core[ai-fullstack-toolkit core\nDefinitions · loader · registry · projections]
