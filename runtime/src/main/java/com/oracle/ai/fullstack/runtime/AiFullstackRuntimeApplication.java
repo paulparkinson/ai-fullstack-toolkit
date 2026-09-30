@@ -15,7 +15,6 @@ public class AiFullstackRuntimeApplication {
         return args -> {
             registry.register(new ToolDefinition("inventory-transfer-a2ui", "Review and approve a governed inventory transfer in an A2UI form.", Map.of("sourceLocation", "string", "destinationLocation", "string", "sku", "string", "quantity", "integer"), new ToolDefinition.McpExposure(false),
                 new ToolDefinition.A2aExposure(true, "Inventory Transfer A2UI", "Plans and renders a reviewable inventory transfer form.", "0.1.0"), new ToolDefinition.A2uiExposure(true, "inventory-transfer-review"), new ToolDefinition.McpAppExposure(false, "ui://inventory-transfer/review")));
-            registerMcpApp(registry, "inventory-transfer-mcpapp", "Inventory transfer MCP App", "ui://inventory-transfer/review");
             registerMcpApp(registry, "inventory-spatial-mcpapp", "Inventory spatial MCP App", "ui://inventory-spatial/map");
             registerMcpApp(registry, "inventory-graph-mcpapp", "Inventory graph MCP App", "ui://inventory-graph/dependencies");
             OracleMcpToolCatalog.load().forEach(registry::register);

@@ -72,7 +72,6 @@ Open [http://localhost:8080](http://localhost:8080). The **AI Fullstack Toolkit*
 | Tool | MCP | A2A | A2UI | MCP App |
 | --- | --- | --- | --- | --- |
 | `inventory-transfer-a2ui` | disabled | enabled | enabled | disabled |
-| `inventory-transfer-mcpapp` | enabled | disabled | disabled | enabled |
 | `inventory-spatial-mcpapp` | enabled | disabled | disabled | enabled |
 | `inventory-graph-mcpapp` | enabled | disabled | disabled | enabled |
 
@@ -82,9 +81,10 @@ The runtime also imports the checked-in Oracle Database MCP Java Toolkit `tools.
 
 1. Start the runtime with the command above.
 2. Select `inventory-transfer-a2ui`. Its tiles show only **A2A** and **A2UI** enabled. The A2A card has an addressable inventory-transfer skill, and the A2UI tab begins the `inventory-transfer-review` surface.
-3. Select any `*-mcpapp` tool. Its tiles show only **MCP** and **MCP APP** enabled. Use the MCP APP tab to inspect the interactive resource URI.
-4. Select `oracle-sql` or an imported supply-chain tool to inspect the MCP descriptor and input schema imported from the Oracle toolkit catalog.
-5. Use **Create** to add a definition. The UI performs a `PUT /api/tools/{id}` and immediately regenerates all enabled projections.
+3. Select `inventory-spatial-mcpapp` or `inventory-graph-mcpapp`. Their tiles show only **MCP** and **MCP APP** enabled. Use the MCP APP tab to inspect the interactive resource URI.
+4. Select `inventory-transfer-a2ui`. Its tiles show **A2A** and **A2UI** enabled, with MCP App disabled. This is the agent-driven review surface; any production write must remain behind an explicit, authenticated approval workflow.
+5. Select `oracle-sql` or an imported supply-chain tool to inspect the MCP descriptor and input schema imported from the Oracle toolkit catalog.
+6. Use **Create** to add a definition. The UI performs a `PUT /api/tools/{id}` and immediately regenerates all enabled projections.
 
 Equivalent HTTP inspection:
 
@@ -149,4 +149,4 @@ curl -s http://localhost:8081/demo/a2a-card | jq
 
 ## Current scope
 
-This runnable slice supplies the unified contract, generated discovery/UI documents, live runtime API, GUI, test coverage, and a vendor baseline. It imports the original Oracle toolkit YAML entries as MCP-only dashboard definitions; their production execution remains owned by the Oracle MCP Java Toolkit. Exposing an MCP tool as an A2A, A2UI, or MCP App surface is intentionally opt-in and must carry its authentication, authorization, input validation, auditing, and approval rules forward.
+This runnable slice supplies the unified contract, generated discovery/UI documents, live runtime API, GUI, test coverage, and a vendor baseline. The seeded inventory split is intentional: graph and spatial exploration use MCP Apps; transfer review uses A2A/A2UI. It imports the original Oracle toolkit YAML entries as MCP-only dashboard definitions; their production execution remains owned by the Oracle MCP Java Toolkit. Exposing an MCP tool as an A2A, A2UI, or MCP App surface is intentionally opt-in and must carry its authentication, authorization, input validation, auditing, and approval rules forward. The seeded transfer surface is review/draft only; it is not a database write implementation.
