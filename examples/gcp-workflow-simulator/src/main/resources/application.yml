@@ -1,0 +1,12 @@
+server:
+  address: 127.0.0.1
+  port: 8082
+  tomcat:
+    max-http-form-post-size: 64KB
+fullstack:
+  protocols:
+    enabled: true
+  public-base-url: http://127.0.0.1:${server.port}
+spring:
+  application:
+    name: gcp-workflow-simulator

@@ -1,0 +1,13 @@
+<!doctype html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Fullstack workflow simulator</title></head>
+<body><main>
+<p class="eyebrow">AI FULLSTACK TOOLKIT · PROTOCOL TEST APP</p>
+<h1>One workflow. Four AI surfaces.</h1>
+<p class="warning">SIMULATION ONLY — fixture data, no Oracle/GCP connection, no real transfers. This is a deterministic test host, not Gemini or an LLM.</p>
+<label>Test SKU <select id="sku"><option>SKU-500</option><option>SKU-APAC-210</option><option>SKU-700</option></select></label>
+<nav><button data-operation="list-stockout-risk">1. List stockout risks</button><button data-operation="show-supply-chain-graph">2. Show graph</button><button data-operation="show-spatial-hotspots">3. Show map</button><button data-operation="suggest-inventory-transfers">4. Review transfers</button></nav>
+<form id="prompt-form"><label for="prompt">Or enter a supported demo prompt</label><div class="prompt"><input id="prompt" value="List SKUs with risk of stock outages" autocomplete="off"><button>Run</button></div></form>
+<p id="status" role="status">Connecting to the shared MCP server…</p>
+<section id="result" aria-label="Workflow result"></section>
+<details><summary>Protocol trace and provenance</summary><pre id="trace"></pre></details>
+<p class="footnote">Reads: simulated managed-agent backend → MCP tools → sandboxed MCP Apps. Transfer review: A2A → A2UI → explicit approval → simulated toolkit write.</p>
+</main><script type="module" src="/host.js"></script></body></html>

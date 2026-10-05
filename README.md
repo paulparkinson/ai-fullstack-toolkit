@@ -1,31 +1,48 @@
 # AI Fullstack Toolkit
 
-AI Fullstack Toolkit is a full-stack toolkit that allows MCP tools provided by the MCP toolkit to be exposed as A2A agents via configuration alone, while making A2UI and MCP Apps pluggable as well. Together, these integrations form a full-stack solution. Any UI can be used or specified; the toolkit also provides a convenient subset of best-practice UIs for varied data visualizations and workflows.
+AI Fullstack Toolkit provides a common Java execution framework for **MCP, A2A, A2UI, and MCP Apps**. Register a validated business operation once, bind its backend, and opt it into the required surfaces. The existing Oracle Database MCP Java Toolkit remains the database execution foundation; the framework delegates to it over MCP rather than implementing another SQL engine.
+
+The new [GCP workflow simulator](examples/gcp-workflow-simulator/README.md) exercises the read → graph → map → review → approve flow using real protocol transports and explicitly simulated backends. **No GCP demo source, deployment, connector, Oracle profile, or database data was changed.**
 
 ![AI Fullstack Toolkit dashboard](images/ai-fullstack-toolkit-dashboard.png)
 
 AI Fullstack Toolkit makes one business-tool definition available across four complementary AI surfaces:
 
-| Surface | Generated output |
+| Surface | Executable framework support |
 | --- | --- |
-| MCP | Tool descriptor and JSON input schema |
-| A2A | Agent card with an addressable skill |
-| A2UI | Declarative review surface messages |
-| MCP Apps | UI resource descriptor for an interactive tool experience |
+| MCP | Official Java SDK Streamable HTTP server; discovery, validated calls, structured results, resources |
+| A2A | Agent card and synchronous JSON-RPC `message/send`; shares the MCP execution catalog |
+| A2UI | Declarative v0.8 review form, caller-bound approval, expiry and replay rejection |
+| MCP Apps | `_meta.ui.resourceUri`, bundled HTML resources, official Apps bridge, interactive Cytoscape/MapLibre views |
 
 It deliberately has only three publishable Maven artifacts:
 
-1. `ai-fullstack-toolkit` — framework-neutral Java core: definitions, validation, registry, YAML loader, and projections.
-2. `ai-fullstack-toolkit-starter` — Spring Boot auto-configuration for adding the registry to an application.
+1. `ai-fullstack-toolkit` — framework-neutral definitions, YAML loader, executable catalog, backend SPI, provenance/audit events, approval gate, and projections.
+2. `ai-fullstack-toolkit-starter` — opt-in Spring Boot protocol adapters and an allowlisted Oracle toolkit MCP client adapter.
 3. `ai-fullstack-runtime` — standalone Spring Boot runtime and configuration UI.
 
-The included inventory-transfer project is a non-published example, not a fourth library. The upstream Oracle Database MCP Java Toolkit source is vendored as a pinned functional reference under [`upstream/`](UPSTREAM.md); it is not copied into or hidden behind the new API.
+Both example applications are non-published. The upstream Oracle Database MCP Java Toolkit remains pinned and unmodified under [`upstream/`](UPSTREAM.md). `OracleToolkitBackend` calls an authenticated, initialized MCP client connected to that server; it does not import the server implementation or bypass its database governance.
 
 The runtime includes Oracle JDBC Driver Extensions for centralized configuration and authentication across OCI, Microsoft Azure, Google Cloud Platform (GCP), and Amazon Web Services (AWS). These providers are loaded through JDBC's standard service-provider mechanism, so existing JDBC URLs and properties can select the cloud configuration provider without application-code changes. See the [ojdbc-extensions project](https://github.com/oracle/ojdbc-extensions) for provider URL and property formats.
 
-The database integration also supports Oracle Data Safe Deep Data Security (DDS) across OCI, Azure, GCP, and AWS deployments, allowing the same security controls to follow the database connection regardless of cloud placement.
+Database authorization and security policies remain enforced by Oracle and the upstream toolkit. This framework does not itself configure or verify Data Safe / Deep Data Security policies.
 
-## Component architecture
+## Shared execution architecture
+
+```text
+MCP tools / A2A message/send
+        → Operations: exposure + input validation + server-owned backend binding
+            → read Backend: existing managed Oracle agent client (future GCP wiring)
+                → structured result + backend evidence → MCP App (graph/map)
+            → review handler → A2UI → explicit user action → ApprovalGate
+                → OracleToolkitBackend → existing Oracle MCP toolkit → database write
+```
+
+The simulator substitutes **only the backend implementations and caller identity**. Its protocol endpoints, input validation, approval gate, and MCP App bridge are real. A simple risk-list operation has no UI resource metadata, so it returns a table without launching graph/map apps. Raw evidence supplied by a model is not an accepted input.
+
+See [framework integration and boundaries](docs/common-framework.md) for registration, upstream toolkit delegation, authentication, protocol versions, and what must be completed before a production migration.
+
+### Existing descriptor dashboard
 
 ![AI Fullstack Toolkit architecture](images/ai-fullstack-toolkit-architecture.png)
 
@@ -55,14 +72,44 @@ flowchart TB
   JDBC --> Providers[ojdbc-extensions\ncloud configuration providers]
 ```
 
-## Quick start
+## Quick start: executable workflow simulator
 
-Prerequisites: JDK 17+ and Maven 3.9+.
+Prerequisites: JDK 17+, Maven 3.9+, and Node.js 22.12+ with npm. Maven installs the lockfile-pinned frontend dependencies and bundles the UI into the simulator JAR. The build needs dependency-download access; the running simulator needs no cloud access, credentials, tile provider, or external JavaScript CDN.
 
 ```bash
-cd ai-fullstack-toolkit
-mvn test
-mvn -pl runtime -am spring-boot:run
+./build_all.sh
+java -jar examples/gcp-workflow-simulator/target/gcp-workflow-simulator-0.1.0-SNAPSHOT.jar
+```
+
+Open **http://127.0.0.1:8082**. Use the four buttons, or these supported test-host prompts:
+
+1. `List SKUs with risk of stock outages`
+2. `Show the supply chain graph for SKU-500.`
+3. `Show the spatial hotspot map for SKU-500.`
+4. `Suggest inventory transfers.`
+
+Step 4 reviews at risk ≥70/100, at most three suggestions. It executes **zero writes** until you click **Approve this transfer**. Even then only an in-memory simulated write is recorded. Replace `SKU-500` with `SKU-APAC-210` or `SKU-700` to exercise distinct graph/map results; unknown SKUs fail without fallback. The prompt parser is deliberately limited and is not an LLM.
+
+The map uses an offline coordinate grid, geographic markers and a connecting line; it is not a street-map provider or a driving-route calculation. Pan/zoom and warehouse clicks work without external network access.
+
+### Browser tests
+
+Stop any manually running simulator first; the tests start their own instance on port 8082.
+
+```bash
+cd examples/gcp-workflow-simulator/frontend
+npx playwright install chromium
+npm test
+```
+
+Java tests cover schema/exposure checks, A2A/MCP execution, resource discovery, dynamic fixtures, no fallback, toolkit-adapter wire delegation, origin rejection, and approval expiry/replay. Browser tests cover the four-step flow, iframe initialization, clickable/moving markers, SKU changes, plain lists, and explicit approval. Screenshots are generated under the example's `target/` directory and are not committed.
+
+These tests prove **framework behavior against simulated backends**, not a live Oracle query, property-graph execution, OAuth renewal, Gemini rendering, or a production transfer.
+
+## Run the existing descriptor dashboard
+
+```bash
+java -jar runtime/target/ai-fullstack-runtime-0.1.0-SNAPSHOT.jar
 ```
 
 Open [http://localhost:8080](http://localhost:8080). The **AI Fullstack Toolkit** dashboard displays the seeded definitions and their enabled surfaces. Select each output tab to view the generated MCP descriptor, A2A card, A2UI messages, or MCP App resource descriptor. Use **Create** to create or replace a definition in the running registry. This first runtime configuration store is intentionally in-memory: restart restores the seeded definition, which makes the demo safe to explore.
@@ -143,10 +190,13 @@ definitions.forEach(registry::register);
 Add the starter to an existing service, then inject `ToolRegistry` and register a `ToolDefinition`. The registry remains independent of Spring, so the same definitions can run in a CLI, servlet, or another framework. The included [`examples/inventory-transfer-demo`](examples/inventory-transfer-demo/README.md) demonstrates the smallest useful Spring Boot service:
 
 ```bash
-mvn -pl examples/inventory-transfer-demo -am spring-boot:run
+mvn -pl core,starter -am install -DskipTests
+mvn -pl examples/inventory-transfer-demo spring-boot:run
 curl -s http://localhost:8081/demo/a2a-card | jq
 ```
 
-## Current scope
+## Current scope and production boundary
 
-This runnable slice supplies the unified contract, generated discovery/UI documents, live runtime API, GUI, test coverage, and a vendor baseline. The seeded inventory split is intentional: graph and spatial exploration use MCP Apps; transfer review uses A2A/A2UI. It imports the original Oracle toolkit YAML entries as MCP-only dashboard definitions; their production execution remains owned by the Oracle MCP Java Toolkit. Exposing an MCP tool as an A2A, A2UI, or MCP App surface is intentionally opt-in and must carry its authentication, authorization, input validation, auditing, and approval rules forward. The seeded transfer surface is review/draft only; it is not a database write implementation.
+The common framework now executes registered handlers; the older runtime dashboard still previews descriptors and has its own legacy JDBC demonstration. Merely creating a dashboard definition does **not** register executable code. The old JDBC demo's seeded fallback is not used by the common execution path or simulator.
+
+Protocol adapters are disabled unless `fullstack.protocols.enabled=true`. The default caller resolver requires a container-authenticated principal. The simulator deliberately overrides that resolver and binds to loopback; **do not deploy its identity or fixtures as a production service**. Authentication/OAuth deployment, durable approvals/audit, database transaction idempotency, and live host compatibility remain application responsibilities. The in-memory approval gate prevents repeat dispatch in one process, but cannot guarantee exactly-once database execution across restarts or distributed instances.

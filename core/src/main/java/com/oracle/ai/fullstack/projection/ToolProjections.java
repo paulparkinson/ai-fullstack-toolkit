@@ -12,7 +12,11 @@ public final class ToolProjections {
         Map<String, Object> descriptor = new LinkedHashMap<>();
         descriptor.put("name", tool.id());
         descriptor.put("description", tool.description());
-        descriptor.put("inputSchema", Map.of("type", "object", "properties", tool.inputSchema()));
+        Map<String, Object> properties = new LinkedHashMap<>();
+        tool.inputSchema().forEach((key, type) -> properties.put(key, Map.of("type", type)));
+        descriptor.put("inputSchema", Map.of("type", "object", "properties", properties,
+                "required", tool.inputSchema().keySet().stream().sorted().toList(), "additionalProperties", false));
+        if (tool.mcpApp().enabled()) descriptor.put("_meta", Map.of("ui", Map.of("resourceUri", tool.mcpApp().resourceUri())));
         if (!tool.mcp().statement().isBlank()) descriptor.put("statement", tool.mcp().statement());
         return Map.copyOf(descriptor);
     }
@@ -24,12 +28,12 @@ public final class ToolProjections {
     }
     public static List<Map<String, Object>> a2uiExample(ToolDefinition tool) {
         String surface = tool.a2ui().surfaceId();
-        Map<String, Object> component = new LinkedHashMap<>();
-        component.put("id", "transfer-review"); component.put("component", "Card");
-        component.put("children", List.of(Map.of("component", "Text", "text", "Review " + tool.a2a().name()), Map.of("component", "Button", "label", "Approve transfer")));
-        return List.of(Map.of("type", "beginRendering", "surfaceId", surface), Map.of("type", "surfaceUpdate", "surfaceId", surface, "components", List.of(component)));
+        Map<String, Object> component = Map.of("id", "review", "component", Map.of("Text", Map.of("text",
+            Map.of("literalString", "Preview only: " + tool.a2a().name() + ". No executable approval is attached."))));
+        return List.of(Map.of("surfaceUpdate", Map.of("surfaceId", surface, "components", List.of(component))),
+            Map.of("beginRendering", Map.of("surfaceId", surface, "root", "review")));
     }
     public static Map<String, Object> mcpAppDescriptor(ToolDefinition tool) {
-        return Map.of("resource", tool.mcpApp().resourceUri(), "mimeType", "text/html", "tool", tool.id());
+        return Map.of("resource", tool.mcpApp().resourceUri(), "mimeType", "text/html;profile=mcp-app", "tool", tool.id());
     }
 }

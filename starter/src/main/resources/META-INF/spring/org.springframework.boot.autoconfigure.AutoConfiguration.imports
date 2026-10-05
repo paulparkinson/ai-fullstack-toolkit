@@ -1,1 +1,2 @@
 com.oracle.ai.fullstack.starter.AiFullstackToolkitAutoConfiguration
+com.oracle.ai.fullstack.starter.ProtocolAutoConfiguration

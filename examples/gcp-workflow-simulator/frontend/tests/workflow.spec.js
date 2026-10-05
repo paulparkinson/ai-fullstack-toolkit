@@ -1,0 +1,57 @@
+import { test, expect } from '@playwright/test';
+
+test('four-step workflow uses MCP, MCP Apps, A2A and A2UI without implicit writes',async({page,request})=>{
+  const errors=[];page.on('pageerror',e=>errors.push(e.message));
+  await page.goto('/');await expect(page.locator('#status')).toContainText('Connected.');
+  await page.getByRole('button',{name:'1. List stockout risks'}).click();
+  await expect(page.locator('table tr')).toHaveCount(4);await expect(page.locator('iframe')).toHaveCount(0);
+  await expect(page.locator('#trace')).toContainText('simulated-managed-agent');
+  await page.screenshot({path:'../target/risk-list.png',fullPage:true});
+  await page.getByRole('button',{name:'2. Show graph'}).click();
+  let app=page.frameLocator('iframe');
+  await expect(app.locator('#detail')).toContainText('SIMULATED SKU-500');
+  await expect(app.locator('canvas').first()).toBeVisible();
+  const graphBox=await app.locator('#viz').boundingBox();
+  await app.locator('#viz').click({position:{x:graphBox.width/2,y:graphBox.height/2}});
+  await expect(app.locator('#detail')).toContainText('Dallas · SIMULATED SKU-500');
+  await page.screenshot({path:'../target/graph.png',fullPage:true});
+  await page.getByRole('button',{name:'3. Show map'}).click();
+  app=page.frameLocator('iframe');
+  const source=app.getByRole('button',{name:'Dallas warehouse'});
+  await expect(source).toBeVisible();await expect(app.locator('.warehouse')).toHaveCount(2);
+  await source.click();await expect(app.locator('#detail')).toContainText('Dallas · source · risk 0.25');
+  await expect(app.locator('.maplibregl-popup')).toBeVisible();
+  await page.screenshot({path:'../target/spatial.png',fullPage:true});
+  const panBefore=await source.boundingBox();
+  const mapBox=await app.locator('.maplibregl-canvas').boundingBox();
+  await page.mouse.move(mapBox.x+mapBox.width*.4,mapBox.y+mapBox.height*.2);
+  await page.mouse.down();await page.mouse.move(mapBox.x+mapBox.width*.4+50,mapBox.y+mapBox.height*.2+20,{steps:8});await page.mouse.up();
+  await expect.poll(async()=>Math.abs((await source.boundingBox()).x-panBefore.x)).toBeGreaterThan(10);
+  const before=await source.boundingBox();
+  await app.getByRole('button',{name:'Zoom in'}).click();
+  await expect.poll(async()=>Math.abs((await source.boundingBox()).x-before.x)).toBeGreaterThan(5);
+  await page.locator('#sku').selectOption('SKU-APAC-210');await page.getByRole('button',{name:'3. Show map'}).click();
+  await expect(page.frameLocator('iframe').getByRole('button',{name:'Sydney warehouse'})).toBeVisible();
+  await expect(page.frameLocator('iframe').getByRole('button',{name:'Singapore warehouse'})).toBeVisible();
+  const writesBefore=(await(await request.get('/simulator/diagnostics')).json()).writes;
+  await page.getByRole('button',{name:'4. Review transfers'}).click();
+  await expect(page.locator('.review')).toHaveCount(3);
+  expect((await(await request.get('/simulator/diagnostics')).json()).writes).toBe(writesBefore);
+  await page.screenshot({path:'../target/a2ui-review.png',fullPage:true});
+  await page.getByRole('button',{name:'Approve this transfer'}).first().click();
+  await expect(page.locator('#result')).toContainText('SIMULATED_TRANSFER_RECORDED');
+  expect((await(await request.get('/simulator/diagnostics')).json()).writes).toBe(writesBefore+1);
+  expect(errors).toEqual([]);
+});
+
+test('prompt routing keeps lists plain and unknown SKUs fail without fallback',async({page})=>{
+  await page.goto('/');await expect(page.locator('#status')).toContainText('Connected.');
+  await page.getByRole('button',{name:'Run',exact:true}).click();
+  await expect(page.locator('table tr')).toHaveCount(4);await expect(page.locator('iframe')).toHaveCount(0);
+  await page.locator('#prompt').fill('Show the spatial hotspot map for SKU-MISSING.');
+  await page.getByRole('button',{name:'Run',exact:true}).click();
+  await expect(page.locator('#status')).toContainText('No simulated data for SKU');
+  await expect(page.locator('iframe')).toHaveCount(0);
+  await page.locator('#prompt').fill('Execute a transfer now');await page.getByRole('button',{name:'Run',exact:true}).click();
+  await expect(page.locator('#status')).toContainText('Unsupported simulator prompt');
+});
