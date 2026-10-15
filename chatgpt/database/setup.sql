@@ -1,4 +1,4 @@
--- Run as FINANCIAL in the OCI FinancialDB schema. This creates an isolated
+-- Run as FINANCIAL or ADMIN in the OCI FinancialDB schema. This creates an isolated
 -- example table; it does not change existing application tables.
 CREATE TABLE chatgpt_notes (
   note_id NUMBER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,

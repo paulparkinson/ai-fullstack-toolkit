@@ -9,24 +9,24 @@ dataSources:
 tools:
   list-chatgpt-notes:
     dataSource: financial-db
-    description: Returns up to 50 newest notes from FINANCIAL.CHATGPT_NOTES.
+    description: Returns up to 50 newest notes from the connected account's CHATGPT_NOTES table.
     parameters: []
     statement: >-
       SELECT note_id, note_text, created_at FROM (
         SELECT note_id, note_text, created_at
-          FROM FINANCIAL.chatgpt_notes
+          FROM chatgpt_notes
          ORDER BY created_at DESC, note_id DESC
       ) WHERE ROWNUM <= 50
   add-chatgpt-note:
     dataSource: financial-db
-    description: Inserts one user-confirmed note into FINANCIAL.CHATGPT_NOTES.
+    description: Inserts one user-confirmed note into the connected account's CHATGPT_NOTES table.
     parameters:
       - name: noteText
         type: string
         description: Note text, maximum 500 characters.
         required: true
     statement: >-
-      INSERT INTO FINANCIAL.chatgpt_notes (note_text) VALUES (:noteText)
+      INSERT INTO chatgpt_notes (note_text) VALUES (:noteText)
 
 toolsets:
   chatgpt-notes:
