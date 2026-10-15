@@ -1,0 +1,34 @@
+# Load with the Oracle Database MCP Java Toolkit. DB credentials are supplied
+# to that process through its environment, never stored in this file.
+dataSources:
+  financial-db:
+    url: ${DB_URL}
+    user: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+
+tools:
+  list-chatgpt-notes:
+    dataSource: financial-db
+    description: Returns up to 50 newest notes from FINANCIAL.CHATGPT_NOTES.
+    parameters: []
+    statement: >-
+      SELECT note_id, note_text, created_at FROM (
+        SELECT note_id, note_text, created_at
+          FROM FINANCIAL.chatgpt_notes
+         ORDER BY created_at DESC, note_id DESC
+      ) WHERE ROWNUM <= 50
+  add-chatgpt-note:
+    dataSource: financial-db
+    description: Inserts one user-confirmed note into FINANCIAL.CHATGPT_NOTES.
+    parameters:
+      - name: noteText
+        type: string
+        description: Note text, maximum 500 characters.
+        required: true
+    statement: >-
+      INSERT INTO FINANCIAL.chatgpt_notes (note_text) VALUES (:noteText)
+
+toolsets:
+  chatgpt-notes:
+    - list-chatgpt-notes
+    - add-chatgpt-note

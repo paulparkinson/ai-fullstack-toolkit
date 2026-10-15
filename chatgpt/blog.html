@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>A FinancialDB MCP App in ChatGPT</title>
+<meta name="description" content="A small ChatGPT MCP App reads and writes a FinancialDB table through the Oracle Database MCP Java Toolkit.">
+<style>
+:root{font:16px/1.65 system-ui,sans-serif;color:#17212b;background:#f6f8fa}body{max-width:850px;margin:auto;padding:clamp(18px,5vw,52px)}header{padding:36px 0;border-bottom:1px solid #ccd4dc}h1{font-size:clamp(2rem,6vw,3.4rem);line-height:1.1;letter-spacing:-.04em}h2{margin-top:2.4em}p,li{max-width:75ch}pre{overflow:auto;padding:16px;border-radius:10px;background:#111c29;color:#f1f5f9}code{font-family:ui-monospace,monospace;font-size:.92em}.tag{color:#a33b2c;font-weight:700;text-transform:uppercase;letter-spacing:.08em}.callout{padding:16px 20px;background:#fff;border-left:4px solid #c74634;border-radius:8px}</style></head><body>
+<header><p class="tag">Oracle AI Database · MCP Apps</p><h1>Put a FinancialDB table in ChatGPT</h1><p>A tiny MCP App can make a database table easy to explore: read recent notes, add a note, and keep database access behind the Oracle Database MCP Java Toolkit.</p></header>
+<main>
+<h2>What it does</h2><p>The app in this directory exposes <code>show-financialdb-notes</code> to ChatGPT. It opens a compact panel that reads the newest notes from <code>FINANCIAL.CHATGPT_NOTES</code>. A person can add a note after confirming the write in the panel. Both operations call named Oracle Database MCP Java Toolkit tools; the browser never gets a database password or a JDBC connection.</p>
+<p class="callout">This demo creates its own table and only grants the <code>FINANCIAL</code> account read and insert access to that table. Keep the Toolkit endpoint private and authenticate remote connections.</p>
+<h2>Start it locally</h2><ol>
+<li>Copy <code>.env.example</code> to <code>.env</code>. Set the FinancialDB wallet path, service alias, database password, and Toolkit authentication token. Keep the wallet and <code>.env</code> out of Git.</li>
+<li>As <code>FINANCIAL</code>, run <code>database/setup.sql</code> once to create the isolated notes table.</li>
+<li>Start the Oracle Database MCP Java Toolkit with <code>toolkit-tools.yaml</code> and the <code>chatgpt-notes</code> toolset. Supply database credentials only to that Toolkit process; set its MCP auth token to the same local development token used by <code>ORACLE_MCP_AUTH_TOKEN</code>.</li>
+<li>Run <code>./run.sh</code>. It builds the bundled app and starts the MCP endpoint at <code>http://127.0.0.1:3001/mcp</code>.</li>
+</ol>
+<pre><code>cd chatgpt
+cp .env.example .env
+# Edit .env and configure the Toolkit process using toolkit-tools.yaml
+./run.sh</code></pre>
+<h2>Connect it to ChatGPT</h2><ol>
+<li>Make port 3001 reachable over HTTPS. ChatGPT cannot reach a developer laptop's <code>localhost</code>. For a quick private test, use OpenAI Secure MCP Tunnel when available or a temporary authenticated HTTPS tunnel; do not expose an unauthenticated database-writing endpoint to the public internet.</li>
+<li>In ChatGPT, open the <a href="https://chatgpt.com/plugins">Plugins</a> page, press <strong>+</strong>, and choose <strong>Add custom MCP server</strong>.</li>
+<li>Enter a name and description. For a public HTTPS endpoint, provide its URL ending in <code>/mcp</code>; alternatively choose an available Secure MCP Tunnel. Configure the connection's authentication, review the warning, and create it as a plugin. Workspace policies can restrict custom MCP servers.</li>
+<li>Review the discovered tools. Start a new conversation, type <code>@</code>, select the plugin, and ask: <q>Show my FinancialDB notes.</q> The model invokes the read-only dashboard tool and ChatGPT renders its MCP App UI.</li>
+<li>Type a note in the app, check the explicit write confirmation, and select <strong>Add note</strong>. Refresh the list to see the inserted record.</li>
+</ol>
+<p>Menu labels and developer-mode availability change by account and product release. Follow the current OpenAI <a href="https://developers.openai.com/apps-sdk/deploy/connect-chatgpt">Connect from ChatGPT</a> and <a href="https://developers.openai.com/apps-sdk/mcp-apps-in-chatgpt">MCP Apps compatibility</a> instructions if the menu differs.</p>
+<h2>Project files</h2><ul><li><code>toolkit-tools.yaml</code> — narrow read/insert SQL tools for the Oracle Toolkit.</li><li><code>server.ts</code> — ChatGPT-facing MCP server and bridge to the Toolkit.</li><li><code>src/app.ts</code> — compact MCP App UI.</li><li><code>database/setup.sql</code> — isolated demo table setup.</li></ul>
+</main></body></html>

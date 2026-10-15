@@ -114,6 +114,8 @@ java -jar runtime/target/ai-fullstack-runtime-0.1.0-SNAPSHOT.jar
 
 Open [http://localhost:8080](http://localhost:8080). The **AI Fullstack Toolkit** dashboard displays the seeded definitions and their enabled surfaces. Select each output tab to view the generated MCP descriptor, A2A card, A2UI messages, or MCP App resource descriptor. Use **Create** to create or replace a definition in the running registry. This first runtime configuration store is intentionally in-memory: restart restores the seeded definition, which makes the demo safe to explore.
 
+For a ChatGPT MCP App backed by Oracle Database MCP Java Toolkit and the public OCI FinancialDB, see [`chatgpt/`](chatgpt/README.md) and its [quick walkthrough](chatgpt/blog.html). That example has its own notes table and explicit user-confirmed insert flow.
+
 ## Seeded supply-chain surfaces
 
 | Tool | MCP | A2A | A2UI | MCP App |

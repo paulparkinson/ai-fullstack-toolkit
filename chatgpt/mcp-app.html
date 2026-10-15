@@ -1,0 +1,11 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>FinancialDB Notes</title>
+<style>
+:root{font:16px system-ui,sans-serif;color-scheme:light dark}body{margin:0;padding:20px;background:Canvas;color:CanvasText}h1{font-size:1.3rem;margin:0}.intro{color:GrayText}.row{display:flex;gap:8px;align-items:start;margin:16px 0}textarea{flex:1;min-height:64px;padding:10px;border-radius:8px;border:1px solid GrayText;font:inherit}button{padding:10px 14px;border:0;border-radius:8px;background:#c74634;color:#fff;font:inherit;font-weight:650;cursor:pointer}button.secondary{background:transparent;color:CanvasText;border:1px solid GrayText}.note{padding:12px;margin:10px 0;border:1px solid color-mix(in srgb,CanvasText 20%,transparent);border-radius:8px}.date{color:GrayText;font-size:.85rem}.status{min-height:1.3em;color:GrayText}@media(max-width:520px){.row{flex-direction:column}textarea,button{width:100%;box-sizing:border-box}}
+</style></head><body>
+<h1>FinancialDB Notes</h1><p class="intro">Read recent notes and add a note to the OCI FinancialDB through the Oracle Database MCP Java Toolkit.</p>
+<div class="row"><button id="refresh" class="secondary" type="button">Refresh notes</button></div>
+<div class="row"><textarea id="note" maxlength="500" placeholder="Write a note (up to 500 characters)" aria-label="Note text"></textarea><button id="save" type="button">Add note</button></div>
+<label><input id="confirm-write" type="checkbox"> I confirm adding this note to the shared FinancialDB table.</label>
+<p id="status" class="status" role="status" aria-live="polite">Waiting for ChatGPT.</p><section id="notes" aria-label="Recent notes"></section>
+<script type="module" src="/src/app.ts"></script></body></html>
