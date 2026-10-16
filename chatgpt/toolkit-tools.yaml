@@ -12,7 +12,8 @@ tools:
     description: Returns up to 50 newest notes from the connected account's CHATGPT_NOTES table.
     parameters: []
     statement: >-
-      SELECT note_id, note_text, created_at FROM (
+      SELECT note_id, note_text,
+             TO_CHAR(created_at, 'YYYY-MM-DD"T"HH24:MI:SS.FF3TZH:TZM') AS created_at FROM (
         SELECT note_id, note_text, created_at
           FROM chatgpt_notes
          ORDER BY created_at DESC, note_id DESC

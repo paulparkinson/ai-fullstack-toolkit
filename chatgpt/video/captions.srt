@@ -1,0 +1,180 @@
+1
+00:00:00,000 --> 00:00:04,594
+This walkthrough connects an MCP App to a
+live Oracle database. The labeled local
+
+2
+00:00:04,594 --> 00:00:09,188
+host uses the actual app bundle and MCP
+protocols. ChatGPT connects to the same
+
+3
+00:00:09,188 --> 00:00:13,782
+server through a private tunnel.
+
+4
+00:00:15,000 --> 00:00:19,551
+With the local app and private tunnel
+running, open ChatGPT Plugins. Select Add,
+
+5
+00:00:19,551 --> 00:00:24,101
+then Add custom MCP server. The blog
+includes the exact launcher commands and
+
+6
+00:00:24,101 --> 00:00:28,652
+the tunnel readiness check.
+
+7
+00:00:30,000 --> 00:00:35,974
+Name the plugin FinancialDB Notes. Select
+Tunnel and enter your own tunnel
+
+8
+00:00:35,974 --> 00:00:41,948
+identifier. This reopened form uses a
+placeholder. Choose No authentication only
+
+9
+00:00:41,948 --> 00:00:47,921
+for this authorized private tunnel demo.
+Review the warning, acknowledge it, and
+
+10
+00:00:47,921 --> 00:00:53,895
+select Create as a plugin. ChatGPT then
+initializes MCP and discovers the tools.
+
+11
+00:00:55,000 --> 00:01:00,524
+Complete Connect FinancialDB Notes when
+prompted. This is the actual installed
+
+12
+00:01:00,524 --> 00:01:06,048
+plugin page. Select Try in chat, or
+mention FinancialDB Notes in a new
+
+13
+00:01:06,048 --> 00:01:11,571
+conversation. Ask to show notes and open
+the dashboard, with no writes.
+
+14
+00:01:13,000 --> 00:01:17,709
+The Oracle Database MCP Java Toolkit owns
+the database connection. Its YAML
+
+15
+00:01:17,709 --> 00:01:22,418
+configuration references environment
+variables, so source code and browser
+
+16
+00:01:22,418 --> 00:01:27,126
+assets contain no database credential
+values.
+
+17
+00:01:29,000 --> 00:01:33,837
+The read tool selects the latest fifty
+notes. The insert binds note text as a
+
+18
+00:01:33,837 --> 00:01:38,674
+parameter. Formatting the Oracle timestamp
+as text keeps populated query results
+
+19
+00:01:38,674 --> 00:01:43,511
+compatible with the Toolkit's JSON
+serializer.
+
+20
+00:01:45,000 --> 00:01:49,531
+The TypeScript server delegates named tool
+calls to the Java Toolkit over standard
+
+21
+00:01:49,531 --> 00:01:54,061
+input and output. The read-only entry
+point references a bundled UI resource,
+
+22
+00:01:54,061 --> 00:01:58,592
+which compatible MCP App hosts can render.
+
+23
+00:02:00,000 --> 00:02:04,759
+The UI calls server tools through the
+official MCP App bridge. It validates note
+
+24
+00:02:04,759 --> 00:02:09,518
+length and requires its confirmation
+checkbox before sending a write.
+
+25
+00:02:09,518 --> 00:02:14,277
+Production authorization must also be
+enforced on the server.
+
+26
+00:02:16,000 --> 00:02:21,234
+Configuration selects the OCI or GCP
+profile from the repository environment
+
+27
+00:02:21,234 --> 00:02:26,468
+file. Values are parsed literally. Only
+the selected database settings reach the
+
+28
+00:02:26,468 --> 00:02:31,702
+Oracle child process; tunnel runtime keys
+are excluded.
+
+29
+00:02:33,000 --> 00:02:37,366
+Here, Add note was selected with the
+confirmation box unchecked. The app asks
+
+30
+00:02:37,366 --> 00:02:41,731
+for confirmation and sends no insert. One
+specific conference note was then approved
+
+31
+00:02:41,731 --> 00:02:46,097
+before the database write.
+
+32
+00:02:48,000 --> 00:02:52,842
+The approved note is now returned by a
+fresh Oracle read after restarting the
+
+33
+00:02:52,842 --> 00:02:57,685
+local server. This proves persistence
+beyond the app process. The complete
+
+34
+00:02:57,685 --> 00:03:02,527
+repository build and the MCP discovery and
+resource checks passed.
+
+35
+00:03:04,000 --> 00:03:08,939
+The same app now runs inside ChatGPT
+through the ready private tunnel. Refresh
+
+36
+00:03:08,939 --> 00:03:13,878
+notes completes a live Oracle read. Both
+modern and legacy MCP tests pass, with
+
+37
+00:03:13,878 --> 00:03:18,817
+database credentials kept outside the
+browser.

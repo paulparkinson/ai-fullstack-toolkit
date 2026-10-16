@@ -9,8 +9,10 @@ const refresh = document.querySelector<HTMLButtonElement>("#refresh")!;
 const confirmWrite = document.querySelector<HTMLInputElement>("#confirm-write")!;
 
 app.ontoolresult = result => {
+  if (result.isError) { status.textContent = "Could not load notes. Check the Toolkit connection."; return; }
   const rows = (result.structuredContent as { rows?: Array<Record<string, unknown>> } | undefined)?.rows ?? [];
   render(rows);
+  status.textContent = "Loaded from Oracle FinancialDB.";
 };
 
 function render(rows: Array<Record<string, unknown>>) {

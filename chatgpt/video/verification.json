@@ -1,0 +1,11 @@
+{
+  "dimensions": "1920x1080",
+  "durationSeconds": 202.583333,
+  "videoCodec": "h264",
+  "audioCodec": "aac",
+  "scenes": 12,
+  "captions": 37,
+  "completeDecode": "passed",
+  "blogLinks": "passed",
+  "textCredentialScan": "passed"
+}

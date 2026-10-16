@@ -1,0 +1,74 @@
+[
+  {
+    "image": "01-app.png",
+    "seconds": 15,
+    "title": "A real Oracle MCP App",
+    "narration": "This walkthrough connects an MCP App to a live Oracle database. The labeled local host uses the actual app bundle and MCP protocols. ChatGPT connects to the same server through a private tunnel."
+  },
+  {
+    "title": "Add a custom MCP server",
+    "seconds": 13,
+    "narration": "With the local app and private tunnel running, open ChatGPT Plugins. Select Add, then Add custom MCP server. The blog includes the exact launcher commands and the tunnel readiness check.",
+    "image": "install-menu.png"
+  },
+  {
+    "title": "Configure and create the plugin",
+    "seconds": 24,
+    "narration": "Name the plugin FinancialDB Notes. Select Tunnel and enter your own tunnel identifier. This reopened form uses a placeholder. Choose No authentication only for this authorized private tunnel demo. Review the warning, acknowledge it, and select Create as a plugin. ChatGPT then initializes MCP and discovers the tools.",
+    "image": "install-form.png"
+  },
+  {
+    "title": "Connect and try in chat",
+    "seconds": 18,
+    "narration": "Complete Connect FinancialDB Notes when prompted. This is the actual installed plugin page. Select Try in chat, or mention FinancialDB Notes in a new conversation. Ask to show notes and open the dashboard, with no writes.",
+    "image": "install-installed.png"
+  },
+  {
+    "image": "02-sql.png",
+    "seconds": 16,
+    "title": "Database access stays in the Toolkit",
+    "narration": "The Oracle Database MCP Java Toolkit owns the database connection. Its YAML configuration references environment variables, so source code and browser assets contain no database credential values."
+  },
+  {
+    "image": "03-sql-write.png",
+    "seconds": 16,
+    "title": "Two narrowly scoped SQL operations",
+    "narration": "The read tool selects the latest fifty notes. The insert binds note text as a parameter. Formatting the Oracle timestamp as text keeps populated query results compatible with the Toolkit's JSON serializer."
+  },
+  {
+    "image": "04-server.png",
+    "seconds": 15,
+    "title": "MCP server and UI resource",
+    "narration": "The TypeScript server delegates named tool calls to the Java Toolkit over standard input and output. The read-only entry point references a bundled UI resource, which compatible MCP App hosts can render."
+  },
+  {
+    "image": "05-bridge.png",
+    "seconds": 16,
+    "title": "App bridge and confirmation",
+    "narration": "The UI calls server tools through the official MCP App bridge. It validates note length and requires its confirmation checkbox before sending a write. Production authorization must also be enforced on the server."
+  },
+  {
+    "image": "06-config.png",
+    "seconds": 17,
+    "title": "Reuse the repository environment",
+    "narration": "Configuration selects the OCI or GCP profile from the repository environment file. Values are parsed literally. Only the selected database settings reach the Oracle child process; tunnel runtime keys are excluded."
+  },
+  {
+    "image": "07-confirmation.png",
+    "seconds": 15,
+    "title": "An unconfirmed write is blocked",
+    "narration": "Here, Add note was selected with the confirmation box unchecked. The app asks for confirmation and sends no insert. One specific conference note was then approved before the database write."
+  },
+  {
+    "image": "08-persisted.png",
+    "seconds": 16,
+    "title": "The approved note persists in Oracle",
+    "narration": "The approved note is now returned by a fresh Oracle read after restarting the local server. This proves persistence beyond the app process. The complete repository build and the MCP discovery and resource checks passed."
+  },
+  {
+    "image": "09-chatgpt.png",
+    "seconds": 18,
+    "title": "The app runs inside ChatGPT",
+    "narration": "The same app now runs inside ChatGPT through the ready private tunnel. Refresh notes completes a live Oracle read. Both modern and legacy MCP tests pass, with database credentials kept outside the browser."
+  }
+]

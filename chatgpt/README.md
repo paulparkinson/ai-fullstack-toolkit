@@ -4,6 +4,31 @@ This directory contains a reusable MCP App that lets ChatGPT read the latest 50 
 
 ## Reuse on another computer
 
+### Windows and the root repository environment
+
+The sample can now use the repository root `.env` directly. `OCI` is the default profile; choose `GCP` with `CHATGPT_DB_PROFILE` or the PowerShell launcher's `-Profile` option. No credential file needs to be copied. Optional `chatgpt/.env` and process-level `DB_*` variables override the selected profile. See [implementation notes](IMPLEMENTATION.md) for current verification and boundaries.
+
+```powershell
+mvn -f upstream/oracle-db-mcp-java-toolkit/pom.xml package
+cd chatgpt
+npm ci
+npm run doctor
+$env:CHATGPT_DEMO_HOST = '1' # Optional local protocol host for the walkthrough
+.\run.ps1 -Profile OCI
+```
+
+The Windows launcher starts the Oracle Toolkit over stdio. It supplies credentials only in that child's environment, so no local Toolkit certificate or separate HTTPS Toolkit process is needed for this mode. It binds the ChatGPT-facing server to loopback. From another terminal in `chatgpt/`, run `npm run smoke`; the optional recording host is at `http://127.0.0.1:3001/demo`.
+
+For ChatGPT, keep the app running and use `chatgpt/connect-tunnel.ps1 -TunnelId tunnel_...` from the repository root. Enter an existing OpenAI runtime key at the hidden prompt. Then complete custom MCP plugin setup following the current [Secure MCP Tunnel guide](https://developers.openai.com/api/docs/guides/secure-mcp-tunnels). No application-level OAuth is implemented; this example is for authorized private tunnel use.
+
+If you have explicitly configured `CHATGPT_KEY_FOR_MCPAPP_PLUGIN` in the ignored root `.env`, the PowerShell launcher now reads it through `tunnel.mjs` without prompting. You can also run `node chatgpt/tunnel.mjs --tunnel-id tunnel_...` directly. The key goes only to the tunnel child process, never to the Oracle process, browser, or command arguments. The database configuration reader excludes this variable. The CLI requires both `--log.level` and `--log.format`; the launchers supply them together.
+
+The checkbox and app-only tool visibility are UI safeguards, not server-enforced authorization. A production write service must implement its own authenticated approval policy. The narrated walkthrough and local video regeneration steps are in [the blog](blog.html) and [video/](video/).
+
+The ChatGPT endpoint uses the MCP v2 dual-era HTTP handler. Run `npm run smoke` for the legacy handshake, and `npm run smoke -- --modern` for protocol `2026-07-28`. Both tests read Oracle and the UI resource without writing. In-chat dashboard opening and interactive Refresh notes were verified against the installed private plugin.
+
+### Separately managed HTTPS Toolkit
+
 Use the checked-in code; no reimplementation is needed. A fresh computer does need its own local database wallet/configuration, TLS keystore, OpenAI tunnel runtime key, and compatible ChatGPT workspace. None of those machine credentials are committed. Do not copy this computer's `.env`, wallet, certificates, or runtime API key.
 
 The directory uses the Toolkit checkout in `../upstream/oracle-db-mcp-java-toolkit`. Install a JDK 17+, Maven 3.9+, Node.js 22.12+, and npm. Install `tunnel-client` from the download link in [OpenAI Platform tunnel settings](https://platform.openai.com/settings/organization/tunnels) or the [latest official release](https://github.com/openai/tunnel-client/releases/latest). Check the current command syntax with `tunnel-client help quickstart`; this launcher uses the `CONTROL_PLANE_TUNNEL_ID`, `CONTROL_PLANE_API_KEY`, and `MCP_SERVER_URL` environment variables supported by the CLI.
@@ -118,3 +143,7 @@ For current tunnel setup and permission details, see the [OpenAI Secure MCP Tunn
 - `run.sh` — local app run without an OpenAI tunnel.
 - `run_with_ssl.sh` — loopback app plus Secure MCP Tunnel.
 - `load-env.sh` — loads local `.env` values literally and refuses to load the tunnel runtime key from that file.
+
+## Review the blog and video on another machine
+
+Pull main and open chatgpt/blog.html. Finished screenshots and MP4s are checked in; viewing them needs no database or API key. Play video/oracle-chatgpt-walkthrough.mp4 directly, or serve this directory with python -m http.server 8000 --directory chatgpt from the repository root and open http://localhost:8000/blog.html for the browser caption track. The blog now illustrates adding the custom MCP server, configuring its Tunnel connection, creating and connecting it, and choosing Try in chat. The setup form is a reopened draft with a placeholder tunnel ID; the installed-plugin and dashboard captures show the real working integration.

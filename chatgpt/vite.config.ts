@@ -1,7 +1,7 @@
 import { defineConfig } from "vite";
 import { viteSingleFile } from "vite-plugin-singlefile";
 
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
   plugins: [viteSingleFile()],
-  build: { outDir: "dist", rollupOptions: { input: "mcp-app.html" } }
-});
+  build: { outDir: "dist", emptyOutDir: mode !== 'demo', rollupOptions: { input: mode === 'demo' ? 'demo-host.html' : 'mcp-app.html' } }
+}));

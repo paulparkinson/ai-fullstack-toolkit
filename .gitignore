@@ -725,6 +725,7 @@ oracle-ai-database-gcp-gemini/video/*.mp4
 !.env_example
 !.env.example
 .runtime/
+chatgpt/video/render/
 .aws/
 *.sso
 *.jks

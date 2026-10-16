@@ -1,0 +1,86 @@
+﻿[
+    {
+        "duration":  15,
+        "title":  "A real Oracle MCP App",
+        "image":  "01-app.png",
+        "audioDuration":  13.782132,
+        "start":  0
+    },
+    {
+        "duration":  15,
+        "title":  "Add a custom MCP server",
+        "image":  "install-menu.png",
+        "audioDuration":  13.652063,
+        "start":  15
+    },
+    {
+        "duration":  25,
+        "title":  "Configure and create the plugin",
+        "image":  "install-form.png",
+        "audioDuration":  23.895329,
+        "start":  30
+    },
+    {
+        "duration":  18,
+        "title":  "Connect and try in chat",
+        "image":  "install-installed.png",
+        "audioDuration":  16.571474,
+        "start":  55
+    },
+    {
+        "duration":  16,
+        "title":  "Database access stays in the Toolkit",
+        "image":  "02-sql.png",
+        "audioDuration":  14.126395,
+        "start":  73
+    },
+    {
+        "duration":  16,
+        "title":  "Two narrowly scoped SQL operations",
+        "image":  "03-sql-write.png",
+        "audioDuration":  14.511474,
+        "start":  89
+    },
+    {
+        "duration":  15,
+        "title":  "MCP server and UI resource",
+        "image":  "04-server.png",
+        "audioDuration":  13.591837,
+        "start":  105
+    },
+    {
+        "duration":  16,
+        "title":  "App bridge and confirmation",
+        "image":  "05-bridge.png",
+        "audioDuration":  14.276644,
+        "start":  120
+    },
+    {
+        "duration":  17,
+        "title":  "Reuse the repository environment",
+        "image":  "06-config.png",
+        "audioDuration":  15.701542,
+        "start":  136
+    },
+    {
+        "duration":  15,
+        "title":  "An unconfirmed write is blocked",
+        "image":  "07-confirmation.png",
+        "audioDuration":  13.096825,
+        "start":  153
+    },
+    {
+        "duration":  16,
+        "title":  "The approved note persists in Oracle",
+        "image":  "08-persisted.png",
+        "audioDuration":  14.526803,
+        "start":  168
+    },
+    {
+        "duration":  18,
+        "title":  "The app runs inside ChatGPT",
+        "image":  "09-chatgpt.png",
+        "audioDuration":  14.816599,
+        "start":  184
+    }
+]
