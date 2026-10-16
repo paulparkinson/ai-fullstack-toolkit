@@ -2,6 +2,8 @@
 
 Updated October 16, 2026.
 
+The blog now explicitly documents the three running components: Node MCP App server, its managed Java Toolkit child, and the OpenAI tunnel client. npm is the package/build tool. Both PowerShell launcher windows must remain running. New alternative-backend sections reference Oracle's DB Tools MCP server README/source and SQLcl 26.1 documentation. DB Tools uses Python/FastMCP with OCI configuration and stdio; SQLcl uses saved connections and MCP mode. These sections are integration guidance only: replacing the child transport, mapping tool schemas/results, and preserving the app resource are required. No alternative backend was installed or connected, and the existing video continues to demonstrate the Java Toolkit implementation.
+
 ## Execution path
 
 The ChatGPT-facing Node server delegates the two configured notes operations to the vendored Oracle Database MCP Java Toolkit. The Windows launcher uses an SDK-managed stdio child; the previous authenticated HTTPS upstream mode remains available for separately managed Toolkit installations. The notes app does not invoke the AI Fullstack Java framework's approval gate or simulator backends.

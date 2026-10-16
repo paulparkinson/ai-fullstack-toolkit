@@ -8,6 +8,27 @@
 <video controls preload="metadata" poster="video/poster.png"><source src="video/oracle-chatgpt-walkthrough-web.mp4" type="video/mp4"><track kind="captions" src="video/captions.vtt" srclang="en" label="English" default>Your browser cannot play the video. <a href="video/oracle-chatgpt-walkthrough.mp4">Download the MP4</a>.</video>
 <p><a href="video/oracle-chatgpt-walkthrough.mp4">Download the conference MP4</a> · <a href="video/captions.srt">SRT captions</a> · <a href="video/narration.txt">Narration</a></p>
 <p class="callout">The walkthrough shows Add custom MCP server, Tunnel settings, creation and connection instructions, and Try in chat, followed by real repository source and the working dashboard inside ChatGPT with the installed FinancialDB Notes plugin and a successful live Oracle refresh. Both hosts use the actual app bundle. The private Secure MCP Tunnel must remain running for ChatGPT tool calls.</p>
+<h2>What must stay running for this plugin to work?</h2>
+<p><strong>Both Java and Node.js must run, plus the OpenAI tunnel client.</strong> The plugin uses this chain:</p>
+<pre><code>ChatGPT plugin
+    ↓ private tunnel
+Node.js MCP App server
+    ↓ starts and manages
+Oracle Database MCP Java Toolkit
+    ↓
+Oracle database</code></pre>
+<ul>
+<li><strong>Node.js</strong> serves the plugin’s tools and embedded dashboard.</li>
+<li><strong>Java Toolkit</strong> connects to Oracle and executes the SQL. The Node server starts it automatically as a child process.</li>
+<li><strong>Tunnel client</strong> lets ChatGPT reach your local Node server.</li>
+</ul>
+<p>From the repository root, keep these running in two PowerShell windows:</p>
+<pre><code># Window 1: starts Node and its Java Toolkit child
+.\chatgpt\run.ps1 -Profile OCI</code></pre>
+<pre><code># Window 2: connects ChatGPT to the Node server
+.\chatgpt\connect-tunnel.ps1 -TunnelId YOUR_TUNNEL_ID</code></pre>
+<p><strong>npm is the package/build tool</strong>, not another service you need to keep running. You also don’t need a separately launched Java HTTPS server with this configuration.</p>
+<p>If this computer sleeps or either window closes, the installed plugin remains in ChatGPT, but its database calls stop working. The downloaded demo video works independently.</p>
 <h2>Add the MCP App as a ChatGPT plugin</h2>
 <p>The installation walkthrough below shows the actual ChatGPT interface. The settings form was reopened for this explanation and uses <code>tunnel_...</code> instead of a private identifier. The installed plugin and working dashboard are real. No duplicate plugin was created for these screenshots.</p>
 <ol>
@@ -55,6 +76,34 @@ $env:CHATGPT_DEMO_HOST = '1'
 <li>Review the access warning and discovered tools, then create and install the private plugin. In a new conversation, select it with <code>@</code> and ask <q>Show my FinancialDB notes.</q> Successful rendering and a live notes read in ChatGPT complete the host verification.</li>
 <li>For an approved demonstration write, enter a clearly identified demo note, check the confirmation box, select <strong>Add note</strong>, and refresh to verify persistence.</li></ol>
 <p>Follow the current <a href="https://developers.openai.com/api/docs/guides/secure-mcp-tunnels">OpenAI Secure MCP Tunnel guide</a> and <a href="https://developers.openai.com/api/docs/guides/custom-mcp-server">custom MCP server instructions</a> for account-specific access. Tunnel transport supports private use; public plugin distribution requires a different deployment path.</p>
+<h2>Use another Oracle AI Database MCP server</h2>
+<p>The database MCP server and the MCP App are separate components. This implementation uses the Java Toolkit for its configured SQL operations; Node supplies the FinancialDB tools and dashboard resource. Another database MCP server can replace the upstream component after adapting its transport, tool arguments, and results. These alternatives are integration guidance; the video demonstrates the Java Toolkit implementation.</p>
+<table><thead><tr><th>Database MCP server</th><th>Runtime and connection</th><th>What changes in this app</th></tr></thead><tbody>
+<tr><td>Oracle Database MCP Java Toolkit used here</td><td>Java child process; JDBC settings from the local environment.</td><td>Already implemented: configured notes read and parameterized insert.</td></tr>
+<tr><td>Oracle DB Tools MCP server</td><td>Python/FastMCP; OCI configuration and Database Tools connections.</td><td>Replace the Java child with Python and adapt tool calls/results.</td></tr>
+<tr><td>Oracle SQLcl MCP server</td><td>SQLcl with its Java runtime; saved database connections.</td><td>Launch SQLcl in MCP mode and adapt its tools/output.</td></tr>
+</tbody></table>
+<h3>Oracle DB Tools MCP server: OCI connections and Python</h3>
+<p>Oracle’s <a href="https://github.com/oracle/mcp/tree/main/src/dbtools-mcp-server">DB Tools MCP server</a> is a Python/FastMCP proof of concept, explicitly described as unsuitable for production. It discovers OCI resources and Database Tools connections and offers SQL, table, and report tools over stdio. It uses OCI SDK credentials in <code>~/.oci/config</code>; <code>PROFILE_NAME</code> selects a profile. This sample’s JDBC variables do not configure it. See the <a href="https://github.com/oracle/mcp/blob/main/src/dbtools-mcp-server/README.md">installation and tool reference</a>.</p>
+<p>In a separate checkout of <code>oracle/mcp</code>, install dependencies and launch:</p>
+<pre><code>cd src/dbtools-mcp-server
+python -m pip install -r requirements.txt
+python dbtools-mcp-server.py</code></pre>
+<p>Its SQL tool accepts a Database Tools connection display name and SQL script. Report tools support report definitions and bind values. Configure the intended OCI connection and permissions before testing. For this ChatGPT app, Node would launch and manage the Python stdio child instead of Java; a separately started stdio process is not an HTTP endpoint for the tunnel.</p>
+<h3>Oracle SQLcl MCP server: reuse saved database connections</h3>
+<p><a href="https://docs.oracle.com/en/database/oracle/sql-developer-command-line/26.1/sqcug/sqlcl-mcp-server.html">Oracle SQLcl’s MCP server</a> exposes database tools using preconfigured named or saved SQLcl connections. It supports SQL, PL/SQL, and SQLcl commands. Oracle documents configuring an MCP client to launch SQLcl with <code>-mcp</code> and manage its lifecycle. Use your installation’s executable path and follow the <a href="https://docs.oracle.com/en/database/oracle/sql-developer-command-line/26.1/sqcug/starting-and-managing-sqlcl-mcp-server.html">SQLcl launch configuration</a>:</p>
+<pre><code># Invocation for a local MCP client or backend stdio adapter:
+sql -mcp</code></pre>
+<p>This path replaces the Toolkit child with SQLcl and its Java runtime. Node and the tunnel still serve this dashboard’s ChatGPT-facing connection.</p>
+<h3>Adapt the backend while keeping the dashboard</h3>
+<p>The following is an integration plan based on this repository’s code; these alternatives are not already wired up:</p>
+<ol>
+<li><strong>Change the upstream transport in <code>server.ts</code>.</strong> Its stdio branch hardcodes the Toolkit Java command. Replace it with a Python or SQLcl child and pass only that backend’s configuration. The current <code>run.ps1</code> continues to launch the Java Toolkit until changed.</li>
+<li><strong>Discover and map upstream tools.</strong> The adapter currently calls <code>list-chatgpt-notes</code> and <code>add-chatgpt-note</code>, names defined by <code>toolkit-tools.yaml</code>. Other servers have different schemas. Preserve the public notes tools, implement their fixed operations with the selected backend, and normalize reads to <code>structuredContent.rows</code> containing <code>note_id</code>, <code>note_text</code>, and <code>created_at</code>.</li>
+<li><strong>Preserve write handling.</strong> Use backend-supported binds or a fixed stored procedure/report for note text. Do not concatenate user input into SQL. Keep UI confirmation and enforce authorization on the server where required.</li>
+<li><strong>Keep the MCP App resource.</strong> A database tool server alone does not supply this dashboard. Retain Node’s tool metadata, bundled UI resource, and App bridge. Changing only <code>ORACLE_MCP_URL</code> is insufficient when tool contracts differ; that variable configures the existing HTTP upstream branch, not a stdio command.</li>
+<li><strong>Verify the adapted path.</strong> Test discovery, result normalization, resource rendering, and live refresh before an explicitly approved demo write. Keep Oracle/OCI credentials in backend processes. The tunnel continues to target Node’s app endpoint.</li>
+</ol>
 <h2>Keep the walkthrough reproducible</h2>
 <p><code>video/scenes.json</code> specifies the scene order, actual browser captures, narration, and captions. <code>video/build.ps1</code> generates Windows narration, H.264/AAC MP4, SRT, WebVTT, and a poster. Run <code>video/verify.mjs</code> to check the complete decoded video, stream metadata, captions, and blog links. Finished media and reviewed captures are committed alongside the article; intermediate renders, credentials, and tool downloads stay local. The HTML5 player can later be replaced with a YouTube embed while retaining the captions and download links.</p>
 <p>See <a href="README.md">the setup guide</a> and <a href="IMPLEMENTATION.md">implementation and verification notes</a> for the current transport, credential boundaries, and verified ChatGPT installation.</p>
