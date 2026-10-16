@@ -12,19 +12,23 @@
 <li>Copy <code>.env.example</code> to <code>.env</code>. Set the FinancialDB wallet path, service alias, database password, and Toolkit authentication token. Keep the wallet and <code>.env</code> out of Git.</li>
 <li>Set <code>DB_USERNAME</code> to <code>FINANCIAL</code> or <code>ADMIN</code>; set <code>DB_PASSWORD</code> to the corresponding password. Run <code>database/setup.sql</code> once as that account to create its isolated notes table.</li>
 <li>Start the Oracle Database MCP Java Toolkit with <code>toolkit-tools.yaml</code> and the <code>chatgpt-notes</code> toolset. Supply database credentials only to that Toolkit process; set its MCP auth token to the same local development token used by <code>ORACLE_MCP_AUTH_TOKEN</code>.</li>
-<li>Run <code>./run.sh</code>. It builds the bundled app and starts the MCP endpoint at <code>http://127.0.0.1:3001/mcp</code>.</li>
+<li>For local-only use, run <code>./run.sh</code>. For ChatGPT, install OpenAI's <a href="https://github.com/openai/tunnel-client/releases/latest"><code>tunnel-client</code></a>, set <code>CONTROL_PLANE_TUNNEL_ID</code>, then enter a runtime <code>CONTROL_PLANE_API_KEY</code> with Tunnels Read and Use through a hidden prompt in the launching shell. Keep the key out of <code>.env</code>, command arguments, and source control. Then run <code>./run_with_ssl.sh</code>. It builds the app on <code>127.0.0.1:3001</code> and forwards MCP requests through a private HTTPS tunnel.</li>
 </ol>
 <pre><code>cd chatgpt
 cp .env.example .env
 # Edit .env and configure the Toolkit process using toolkit-tools.yaml
-./run.sh</code></pre>
+export CONTROL_PLANE_TUNNEL_ID=tunnel_...
+read -s -p "Tunnel runtime key: " CONTROL_PLANE_API_KEY; echo
+export CONTROL_PLANE_API_KEY
+./run_with_ssl.sh</code></pre>
 <h2>Connect it to ChatGPT</h2><ol>
-<li>Make port 3001 reachable over HTTPS. ChatGPT cannot reach a developer laptop's <code>localhost</code>. For a quick private test, use OpenAI Secure MCP Tunnel when available or a temporary authenticated HTTPS tunnel; do not expose an unauthenticated database-writing endpoint to the public internet.</li>
+<li>Run <code>./run_with_ssl.sh</code> and keep it open. It forwards the loopback-only app through OpenAI Secure MCP Tunnel, so ChatGPT can reach the server without exposing a public listener. Create or select a tunnel associated with the ChatGPT workspace you will use; an Enterprise-only tunnel may not appear in a Personal workspace. The tunnel ID and runtime key come from your OpenAI Platform tunnel setup. This example's runtime key expires after 30 days.</li>
 <li>In ChatGPT, open the <a href="https://chatgpt.com/plugins">Plugins</a> page, press <strong>+</strong>, and choose <strong>Add custom MCP server</strong>.</li>
-<li>Enter a name and description. For a public HTTPS endpoint, provide its URL ending in <code>/mcp</code>; alternatively choose an available Secure MCP Tunnel. Configure the connection's authentication, review the warning, and create it as a plugin. Workspace policies can restrict custom MCP servers.</li>
+<li>Enter a name and description, choose <strong>Tunnel</strong> under Connection, and select the tunnel used by <code>tunnel-client</code>. Configure authentication as required, review the warning, and create it as a plugin. Workspace policies can restrict custom MCP servers.</li>
 <li>Review the discovered tools. Start a new conversation, type <code>@</code>, select the plugin, and ask: <q>Show my FinancialDB notes.</q> The model invokes the read-only dashboard tool and ChatGPT renders its MCP App UI.</li>
 <li>Type a note in the app, check the explicit write confirmation, and select <strong>Add note</strong>. Refresh the list to see the inserted record.</li>
 </ol>
 <p>Menu labels and developer-mode availability change by account and product release. Follow the current OpenAI <a href="https://developers.openai.com/apps-sdk/deploy/connect-chatgpt">Connect from ChatGPT</a> and <a href="https://developers.openai.com/apps-sdk/mcp-apps-in-chatgpt">MCP Apps compatibility</a> instructions if the menu differs.</p>
 <h2>Project files</h2><ul><li><code>toolkit-tools.yaml</code> — narrow read/insert SQL tools for the Oracle Toolkit.</li><li><code>server.ts</code> — ChatGPT-facing MCP server and bridge to the Toolkit.</li><li><code>src/app.ts</code> — compact MCP App UI.</li><li><code>database/setup.sql</code> — isolated demo table setup.</li></ul>
+<p>Reusing this sample on another computer does not require starting over. See the <a href="https://github.com/paulparkinson/ai-fullstack-toolkit/blob/main/chatgpt/README.md">new-computer setup guide</a> for local wallet, certificate, Toolkit, and tunnel configuration. Runtime credentials and workspace permissions must be set up for that machine and ChatGPT workspace.</p>
 </main></body></html>

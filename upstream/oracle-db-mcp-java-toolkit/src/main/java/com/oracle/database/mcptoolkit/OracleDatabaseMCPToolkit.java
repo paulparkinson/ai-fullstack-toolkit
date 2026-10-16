@@ -170,6 +170,7 @@ public class OracleDatabaseMCPToolkit {
       // Create HTTPS connector
       Connector https = new Connector("org.apache.coyote.http11.Http11NioProtocol");
       https.setPort(Integer.parseInt(LoadedConstants.HTTPS_PORT));
+      https.setProperty("address", System.getProperty("https.address", "127.0.0.1"));
       https.setSecure(true);
       https.setScheme("https");
       https.setProperty("SSLEnabled", "true");
