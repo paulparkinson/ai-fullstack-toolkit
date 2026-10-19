@@ -8,7 +8,17 @@
 <video controls preload="metadata" poster="video/poster.png"><source src="video/oracle-chatgpt-walkthrough-web.mp4" type="video/mp4"><track kind="captions" src="video/captions.vtt" srclang="en" label="English" default>Your browser cannot play the video. <a href="video/oracle-chatgpt-walkthrough.mp4">Download the MP4</a>.</video>
 <p><a href="video/oracle-chatgpt-walkthrough.mp4">Download the conference MP4</a> · <a href="video/captions.srt">SRT captions</a> · <a href="video/narration.txt">Narration</a></p>
 <p class="callout">The walkthrough shows Add custom MCP server, Tunnel settings, creation and connection instructions, and Try in chat, followed by real repository source and the working dashboard inside ChatGPT with the installed FinancialDB Notes plugin and a successful live Oracle refresh. Both hosts use the actual app bundle. The private Secure MCP Tunnel must remain running for ChatGPT tool calls.</p>
+<h2>Quick reference: Server URL or Tunnel?</h2>
+<p>These are the values entered in ChatGPT’s <strong>Add custom MCP server</strong> dialog. Example hosts and tunnel IDs below are placeholders, not deployed endpoints.</p>
+<table><thead><tr><th>MCP server type</th><th>ChatGPT Server URL or Tunnel info</th></tr></thead><tbody>
+<tr><td>Java Toolkit + this FinancialDB MCP App</td><td><strong>Tunnel:</strong> your <code>tunnel_...</code> ID; tunnel target <code>http://127.0.0.1:3001/mcp</code>.</td></tr>
+<tr><td>Oracle DB Tools Python MCP server</td><td>Native stdio has no Server URL. With an adapted Node app: <strong>Tunnel</strong> ID → <code>http://127.0.0.1:3001/mcp</code>.</td></tr>
+<tr><td>Oracle SQLcl MCP server</td><td>Native stdio has no Server URL. With an adapted Node app: <strong>Tunnel</strong> ID → <code>http://127.0.0.1:3001/mcp</code>.</td></tr>
+<tr><td>Oracle ORDS MCP server</td><td><strong>Server URL:</strong> <code>https://&lt;ords-host&gt;/mcp</code>, with OAuth; no tunnel needed when reachable by ChatGPT.</td></tr>
+</tbody></table>
+<p>The loopback URL is configured in the tunnel client, not entered as a remote Server URL in ChatGPT. A stdio command cannot be pasted into that field. The Python and SQLcl rows require the adapter changes described below. A remotely hosted app adapter could instead provide its own HTTPS Server URL.</p>
 <h2>What must stay running for this plugin to work?</h2>
+<p>This local-process explanation applies to the Java Toolkit demonstration. A directly connected, remotely hosted ORDS server uses the separate deployment described below.</p>
 <p><strong>Both Java and Node.js must run, plus the OpenAI tunnel client.</strong> The plugin uses this chain:</p>
 <pre><code>ChatGPT plugin
     ↓ private tunnel
@@ -82,6 +92,7 @@ $env:CHATGPT_DEMO_HOST = '1'
 <tr><td>Oracle Database MCP Java Toolkit used here</td><td>Java child process; JDBC settings from the local environment.</td><td>Already implemented: configured notes read and parameterized insert.</td></tr>
 <tr><td>Oracle DB Tools MCP server</td><td>Python/FastMCP; OCI configuration and Database Tools connections.</td><td>Replace the Java child with Python and adapt tool calls/results.</td></tr>
 <tr><td>Oracle SQLcl MCP server</td><td>SQLcl with its Java runtime; saved database connections.</td><td>Launch SQLcl in MCP mode and adapt its tools/output.</td></tr>
+<tr><td>Oracle ORDS MCP server</td><td>Remote HTTPS <code>/mcp</code>; OAuth/JWT authentication.</td><td>Connect directly for database tools, or adapt the Node backend to retain this notes dashboard.</td></tr>
 </tbody></table>
 <h3>Oracle DB Tools MCP server: OCI connections and Python</h3>
 <p>Oracle’s <a href="https://github.com/oracle/mcp/tree/main/src/dbtools-mcp-server">DB Tools MCP server</a> is a Python/FastMCP proof of concept, explicitly described as unsuitable for production. It discovers OCI resources and Database Tools connections and offers SQL, table, and report tools over stdio. It uses OCI SDK credentials in <code>~/.oci/config</code>; <code>PROFILE_NAME</code> selects a profile. This sample’s JDBC variables do not configure it. See the <a href="https://github.com/oracle/mcp/blob/main/src/dbtools-mcp-server/README.md">installation and tool reference</a>.</p>
@@ -95,6 +106,11 @@ python dbtools-mcp-server.py</code></pre>
 <pre><code># Invocation for a local MCP client or backend stdio adapter:
 sql -mcp</code></pre>
 <p>This path replaces the Toolkit child with SQLcl and its Java runtime. Node and the tunnel still serve this dashboard’s ChatGPT-facing connection.</p>
+<h3>Oracle ORDS MCP server: direct remote access without a local install</h3>
+<p>Oracle documents MCP in <strong>ORDS 26.2 standalone</strong>. An administrator must enable <code>feature.mcp</code>, configure JWT authentication, and authorize database pools. The endpoint is <code>https://&lt;ords-host&gt;/mcp</code>, not <code>/ords/&lt;schema&gt;/mcp</code>. The documented MCP runtime is unavailable in Tomcat or WebLogic deployments. See <a href="https://docs.oracle.com/en/database/oracle/oracle-rest-data-services/26.2/ordig/configuring-model-context-protocol-mcp.html">Oracle’s ORDS MCP configuration guide</a>.</p>
+<p>ORDS requires bearer JWT authentication and publishes protected-resource metadata at <code>/.well-known/oauth-protected-resource/mcp</code>. Its identity provider and database scopes or roles must be configured for the intended callers. See <a href="https://docs.oracle.com/en/database/oracle/oracle-rest-data-services/26.2/orddg/using-ords-model-context-protocol-mcp.html">ORDS authentication and protocol details</a>.</p>
+<p>In ChatGPT, select <strong>Server URL</strong>, enter the remotely reachable HTTPS endpoint, and configure <strong>OAuth</strong> for that deployment. ChatGPT supports remote streaming HTTP and OAuth; see <a href="https://developers.openai.com/api/docs/guides/custom-mcp-server">OpenAI’s custom MCP server instructions</a>. Thus, with compatible OAuth configuration and workspace access, this direct remote route needs <strong>no Java, Node.js, npm, Python, SQLcl, or tunnel client installed on the user’s ChatGPT computer</strong>. The ORDS service and identity provider run on server infrastructure reachable by ChatGPT. An intranet-only hostname is not sufficient for direct access.</p>
+<p>Direct ORDS access exposes its database tools; it does not automatically provide this FinancialDB Notes dashboard. Retaining that UI requires adapting and hosting the Node MCP App layer, then connecting ChatGPT to that app endpoint. ORDS is documented here as an alternative; no ORDS deployment or end-to-end ChatGPT OAuth connection was tested in this repository.</p>
 <h3>Adapt the backend while keeping the dashboard</h3>
 <p>The following is an integration plan based on this repository’s code; these alternatives are not already wired up:</p>
 <ol>

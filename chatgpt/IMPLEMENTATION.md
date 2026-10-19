@@ -2,6 +2,8 @@
 
 Updated October 16, 2026.
 
+Documentation updated October 18, 2026: added ORDS 26.2 standalone as a remote HTTPS MCP alternative and a four-server connection reference table. ORDS uses host-level /mcp, OAuth/JWT, and administrator-enabled pools; direct remote access can avoid client-machine runtimes when reachability, OAuth and workspace permissions are compatible. The current installed notes app still uses its Java Toolkit child through Node and a tunnel. Python DB Tools and SQLcl remain stdio adapter proposals. ORDS was not deployed or integration-tested; the blog distinguishes direct database tools from the custom dashboard.
+
 The blog now explicitly documents the three running components: Node MCP App server, its managed Java Toolkit child, and the OpenAI tunnel client. npm is the package/build tool. Both PowerShell launcher windows must remain running. New alternative-backend sections reference Oracle's DB Tools MCP server README/source and SQLcl 26.1 documentation. DB Tools uses Python/FastMCP with OCI configuration and stdio; SQLcl uses saved connections and MCP mode. These sections are integration guidance only: replacing the child transport, mapping tool schemas/results, and preserving the app resource are required. No alternative backend was installed or connected, and the existing video continues to demonstrate the Java Toolkit implementation.
 
 ## Execution path
