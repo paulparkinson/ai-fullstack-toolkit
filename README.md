@@ -2,6 +2,9 @@
 
 AI Fullstack Toolkit provides a common execution framework for **MCP, A2A, A2UI, and MCP Apps**. Register a validated business operation once, bind its backend, and opt it into the required surfaces. The existing Oracle Database MCP Toolkit remains the database execution foundation; the framework delegates to it over MCP rather than implementing another SQL engine.
 
+![AI Fullstack Toolkit architecture](images/ai-fullstack-toolkit-architecture.png)
+
+See [multicloud examples built with AI Fullstack Toolkit](https://github.com/paulparkinson/oracle-ai-database-multicloud) for end-to-end examples across cloud providers.
 
 AI Fullstack Toolkit makes one business-tool definition available across four complementary AI surfaces:
 
@@ -25,10 +28,6 @@ The runtime includes Oracle JDBC Driver Extensions for centralized configuration
 Database authorization and security policies remain enforced by Oracle and the upstream toolkit. This framework does not itself configure or verify Data Safe / Deep Data Security policies.
 
 ## Shared execution architecture
-
-See [multicloud examples built with AI Fullstack Toolkit](https://github.com/paulparkinson/oracle-ai-database-multicloud) for end-to-end examples across cloud providers.
-
-![AI Fullstack Toolkit architecture](images/ai-fullstack-toolkit-architecture.png)
 
 ```text
 MCP tools / A2A message/send
