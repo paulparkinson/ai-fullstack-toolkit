@@ -1,10 +1,7 @@
 # AI Fullstack Toolkit
 
-AI Fullstack Toolkit provides a common Java execution framework for **MCP, A2A, A2UI, and MCP Apps**. Register a validated business operation once, bind its backend, and opt it into the required surfaces. The existing Oracle Database MCP Java Toolkit remains the database execution foundation; the framework delegates to it over MCP rather than implementing another SQL engine.
+AI Fullstack Toolkit provides a common execution framework for **MCP, A2A, A2UI, and MCP Apps**. Register a validated business operation once, bind its backend, and opt it into the required surfaces. The existing Oracle Database MCP Toolkit remains the database execution foundation; the framework delegates to it over MCP rather than implementing another SQL engine.
 
-The new [GCP workflow simulator](examples/gcp-workflow-simulator/README.md) exercises the read → graph → map → review → approve flow using real protocol transports and explicitly simulated backends. **No GCP demo source, deployment, connector, Oracle profile, or database data was changed.**
-
-![AI Fullstack Toolkit dashboard](images/ai-fullstack-toolkit-dashboard.png)
 
 AI Fullstack Toolkit makes one business-tool definition available across four complementary AI surfaces:
 
@@ -29,6 +26,10 @@ Database authorization and security policies remain enforced by Oracle and the u
 
 ## Shared execution architecture
 
+See [multicloud examples built with AI Fullstack Toolkit](https://github.com/paulparkinson/oracle-ai-database-multicloud) for end-to-end examples across cloud providers.
+
+![AI Fullstack Toolkit architecture](images/ai-fullstack-toolkit-architecture.png)
+
 ```text
 MCP tools / A2A message/send
         → Operations: exposure + input validation + server-owned backend binding
@@ -43,8 +44,6 @@ The simulator substitutes **only the backend implementations and caller identity
 See [framework integration and boundaries](docs/common-framework.md) for registration, upstream toolkit delegation, authentication, protocol versions, and what must be completed before a production migration.
 
 ### Existing descriptor dashboard
-
-![AI Fullstack Toolkit architecture](images/ai-fullstack-toolkit-architecture.png)
 
 ```mermaid
 flowchart LR
@@ -102,7 +101,7 @@ npx playwright install chromium
 npm test
 ```
 
-Java tests cover schema/exposure checks, A2A/MCP execution, resource discovery, dynamic fixtures, no fallback, toolkit-adapter wire delegation, origin rejection, and approval expiry/replay. Browser tests cover the four-step flow, iframe initialization, clickable/moving markers, SKU changes, plain lists, and explicit approval. Screenshots are generated under the example's `target/` directory and are not committed.
+Automated tests cover schema/exposure checks, A2A/MCP execution, resource discovery, dynamic fixtures, no fallback, toolkit-adapter wire delegation, origin rejection, and approval expiry/replay. Browser tests cover the four-step flow, iframe initialization, clickable/moving markers, SKU changes, plain lists, and explicit approval. Screenshots are generated under the example's `target/` directory and are not committed.
 
 These tests prove **framework behavior against simulated backends**, not a live Oracle query, property-graph execution, OAuth renewal, Gemini rendering, or a production transfer.
 
@@ -114,7 +113,7 @@ java -jar runtime/target/ai-fullstack-runtime-0.1.0-SNAPSHOT.jar
 
 Open [http://localhost:8080](http://localhost:8080). The **AI Fullstack Toolkit** dashboard displays the seeded definitions and their enabled surfaces. Select each output tab to view the generated MCP descriptor, A2A card, A2UI messages, or MCP App resource descriptor. Use **Create** to create or replace a definition in the running registry. This first runtime configuration store is intentionally in-memory: restart restores the seeded definition, which makes the demo safe to explore.
 
-For a ChatGPT MCP App backed by Oracle Database MCP Java Toolkit and the public OCI FinancialDB, see [`chatgpt/`](chatgpt/README.md) and its [quick walkthrough](chatgpt/blog.html). That example has its own notes table and explicit user-confirmed insert flow.
+For a ChatGPT MCP App backed by Oracle Database MCP Toolkit and the public OCI FinancialDB, see [`chatgpt/`](chatgpt/README.md) and its [quick walkthrough](chatgpt/blog.html). That example has its own notes table and explicit user-confirmed insert flow.
 
 ## Seeded supply-chain surfaces
 
@@ -178,13 +177,6 @@ tools:
     mcpApp:
       enabled: true
       resource: ui://inventory-transfer/review
-```
-
-Use it directly from Java:
-
-```java
-var definitions = new ToolkitConfigurationLoader().load(inputStream);
-definitions.forEach(registry::register);
 ```
 
 ## Spring Boot integration
