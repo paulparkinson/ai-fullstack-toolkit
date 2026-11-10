@@ -136,6 +136,8 @@ Bind this operation to the application's memory adapter and enforce identity, te
 
 ### 6. Admin UI: configure and inspect the integrated runtime
 
+![AI Fullstack Toolkit admin UI showing registered tools and generated MCP App output](images/ai-fullstack-toolkit-dashboard.png)
+
 Run the standalone runtime and open [http://localhost:8080](http://localhost:8080). The admin UI lets you inspect tool definitions and their generated MCP, A2A, A2UI, and MCP App projections, then create or replace definitions in the running registry. The demo's configuration store is in-memory, so changes reset when the runtime restarts. Use the starter integration and your deployment's persistent configuration process for production.
 
 ```bash
