@@ -21,11 +21,129 @@ It deliberately has only three publishable Maven artifacts:
 2. `ai-fullstack-toolkit-starter` — opt-in Spring Boot protocol adapters and an allowlisted Oracle toolkit MCP client adapter.
 3. `ai-fullstack-runtime` — standalone Spring Boot runtime and configuration UI.
 
-Both example applications are non-published. The upstream Oracle Database MCP Java Toolkit remains pinned and unmodified under [`upstream/`](UPSTREAM.md). `OracleToolkitBackend` calls an authenticated, initialized MCP client connected to that server; it does not import the server implementation or bypass its database governance.
+The upstream Oracle Database MCP Toolkit remains pinned and unmodified under [`upstream/`](UPSTREAM.md). `OracleToolkitBackend` calls an authenticated, initialized MCP client connected to that server; it does not import the server implementation or bypass its database governance.
 
 The runtime includes Oracle JDBC Driver Extensions for centralized configuration and authentication across OCI, Microsoft Azure, Google Cloud Platform (GCP), and Amazon Web Services (AWS). These providers are loaded through JDBC's standard service-provider mechanism, so existing JDBC URLs and properties can select the cloud configuration provider without application-code changes. See the [ojdbc-extensions project](https://github.com/oracle/ojdbc-extensions) for provider URL and property formats.
 
 Database authorization and security policies remain enforced by Oracle and the upstream toolkit. This framework does not itself configure or verify Data Safe / Deep Data Security policies.
+
+## Build the stack progressively
+
+Each layer builds on the same operation definition: start with governed database tools, expose selected operations through agent protocols, add interactive UI surfaces, configure cloud connectivity and memory, then manage the runtime from the admin UI.
+
+### 1. MCP Toolkit: define governed database tools
+
+The upstream Oracle Database MCP Toolkit owns SQL execution and database governance. Define tools in its YAML configuration; keep credentials in environment variables or a secret store rather than in the file. This abbreviated example shows the structure used by the runtime's [`oracle-mcp-tools.yaml`](runtime/src/main/resources/oracle-mcp-tools.yaml):
+
+```yaml
+dataSources:
+  financial-db:
+    url: ${DB_URL}
+    user: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+
+tools:
+  find-stockout-transfer-recommendations:
+    dataSource: financial-db
+    description: Return governed inventory transfer recommendations.
+    parameters:
+      - name: minimumStockoutRisk
+        type: number
+        required: true
+      - name: maximumRows
+        type: integer
+        required: true
+    statement: >-
+      SELECT * FROM FINANCIAL.stockout_transfer_recommendation_v
+       WHERE stockout_risk_score >= :minimumStockoutRisk
+         AND ROWNUM <= :maximumRows
+```
+
+The toolkit initializes an authenticated MCP client, and the full stack adapter delegates to it through `OracleToolkitBackend`. The shared framework does not replace the upstream SQL engine.
+
+### 2. A2A: expose selected MCP tools as agent endpoints
+
+Add an A2A exposure to the portable toolkit definition to publish an operation through the A2A agent card and `message/send`. The A2A adapter and MCP adapter use the same validated handler and backend binding:
+
+```yaml
+tools:
+  find-stockout-transfer-recommendations:
+    description: Return governed inventory transfer recommendations.
+    inputs:
+      minimumStockoutRisk: number
+      maximumRows: integer
+    mcp:
+      enabled: true
+    a2a:
+      enabled: true
+      name: Inventory Risk Agent
+      version: 0.1.0
+```
+
+The starter publishes `/.well-known/agent-card.json` and routes A2A requests through the same operation catalog. See [framework integration and boundaries](docs/common-framework.md) for the request contract and authentication boundary.
+
+### 3. A2UI and MCP Apps: add task-specific interfaces
+
+Expose review and approval as A2UI, and attach interactive graph or map content as an MCP App resource. Enable each surface only for tools that use it:
+
+```yaml
+tools:
+  inventory-transfer-review:
+    description: Review and approve a governed inventory transfer recommendation.
+    inputs:
+      recommendationId: string
+    a2ui:
+      enabled: true
+      surface: inventory-transfer-review
+    mcpApp:
+      enabled: true
+      resource: ui://inventory-transfer/review
+```
+
+A2UI carries the review surface and explicit user action; the MCP App resource provides the interactive UI. UI metadata does not grant database access: write operations still go through the validated, authorized backend and approval gate.
+
+### 4. Cloud configuration providers: resolve connection settings per cloud
+
+Oracle JDBC Driver Extensions let JDBC applications use cloud-specific configuration and authentication providers without hard-coding provider logic in the application. The runtime reads connection settings from environment variables, for example:
+
+```bash
+export DB_USERNAME='app_user'
+export DB_PASSWORD="$DB_SECRET_FROM_SECRET_STORE"
+export DB_DSN='mydb_high'
+export TNS_ADMIN='/secure/wallet'
+```
+
+For centralized configuration, use the provider-specific JDBC URL and properties from the [ojdbc-extensions project](https://github.com/oracle/ojdbc-extensions). OCI, Azure, GCP, and AWS providers are supported by the extension set; select the provider and authentication mode appropriate to the deployment. Never commit secrets or wallet material.
+
+### 5. Agent memory: add durable context as an application backend
+
+The toolkit's backend SPI lets an application bind an operation to an agent-memory service while keeping its definition and protocol projections consistent. For example, a memory operation can accept a user-scoped query and return only authorized context:
+
+```yaml
+tools:
+  search-agent-memory:
+    description: Retrieve relevant context for the authenticated user.
+    inputs:
+      query: string
+      limit: integer
+    mcp:
+      enabled: true
+    a2a:
+      enabled: true
+```
+
+Bind this operation to the application's memory adapter and enforce identity, tenant scope, retention, and authorization in that backend. The toolkit does not provide a memory store or infer permission to retrieve another user's context.
+
+### 6. Admin UI: configure and inspect the integrated runtime
+
+Run the standalone runtime and open [http://localhost:8080](http://localhost:8080). The admin UI lets you inspect tool definitions and their generated MCP, A2A, A2UI, and MCP App projections, then create or replace definitions in the running registry. The demo's configuration store is in-memory, so changes reset when the runtime restarts. Use the starter integration and your deployment's persistent configuration process for production.
+
+```bash
+./build_all.sh
+java -jar runtime/target/ai-fullstack-runtime-0.1.0-SNAPSHOT.jar
+```
+
+The existing configuration format below remains the portable source for these layered definitions.
 
 ## Shared execution architecture
 
